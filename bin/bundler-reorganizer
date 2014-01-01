@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/bundler/reorganizer/cli'
+Bundler::Reorganizer::CLI.start(ARGV)
