@@ -1,6 +1,4 @@
 require 'thor'
-require 'nokogiri'
-require 'fileutils'
 
 module Bundler
   module Reorganizer
@@ -8,16 +6,24 @@ module Bundler
       attr_accessor :sources, :rubies, :groups, :current_group
 
       desc "reorganize PATH_TO_GEMFILE [OPTIONS]", "reorganize Gemfile into groups of gems"
+      option :output, desc: 'path to write output of reorganized Gemfile', aliases: '-o'
       def reorganize(gemfile_path)
         @sources = []
         @rubies = []
         @groups = {}
 
         parse gemfile_path
-        # output_buffer = StringIO.new
-        output_buffer = $stdout
+        output_gemfile gemfile_path
+      end
+      default_command :reorganize
 
-        say "Reorganized Gemfile..."
+      private
+
+      def output_gemfile(gemfile_path)
+        output_path = options[:output] || gemfile_path
+        output_buffer = File.open(output_path, 'w')
+        say "Writing reorganized Gemfile to: #{output_path}"
+
         output_buffer << sources.map {|s| "source #{stringify_arg(*s)}"}.join("\n")
         output_buffer << rubies.map {|s| "\nruby #{stringify_arg(*s)}"}.join("\n")
 
@@ -30,10 +36,8 @@ module Bundler
           end
           output_buffer << "\nend" unless group == :default
         end
+        output_buffer << "\n"
       end
-      default_command :reorganize
-
-      private
 
       # pretty print arguments as ruby parsable string
       def stringify_args(*args)

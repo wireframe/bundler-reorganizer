@@ -24,7 +24,18 @@ end
 ## Usage
 
 ```bash
-$ bundler-reorganizer path/to/Gemfile
+$ bundler-reorganizer reorganize path/to/Gemfile
+```
+
+#### (optional) `--output path/to/reorganized/Gemfile`
+
+Controls the location of reorganized Gemfile.
+
+aliased to `-o`
+
+example:
+```bash
+$ bundler-reorganizer reorganize path/to/original/Gemfile --output path/to/reorganized/Gemfile
 ```
 
 ## Installation
