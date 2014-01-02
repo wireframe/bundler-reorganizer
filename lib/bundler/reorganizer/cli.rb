@@ -3,6 +3,7 @@ require 'thor'
 module Bundler
   module Reorganizer
     class CLI < Thor
+      DEFAULT_GROUP = [:default]
       attr_accessor :sources, :rubies, :groups, :current_group
 
       desc "reorganize PATH_TO_GEMFILE [OPTIONS]", "reorganize Gemfile into groups of gems"
@@ -29,12 +30,13 @@ module Bundler
 
         groups.each do |group, gems|
           output_buffer << "\n"
-          indent = group == :default ? '' : '  '
-          output_buffer << "\ngroup #{stringify_args(*group)} do" unless group == :default
+          indent = group == DEFAULT_GROUP ? '' : '  '
+          output_buffer << "\ngroup #{stringify_args(*group)} do" unless group == DEFAULT_GROUP
+          gems.sort_by!(&:first)
           gems.each do |gem_args|
             output_buffer << "\n#{indent}gem #{stringify_args(*gem_args.reject(&:empty?))}"
           end
-          output_buffer << "\nend" unless group == :default
+          output_buffer << "\nend" unless group == DEFAULT_GROUP
         end
         output_buffer << "\n"
       end
@@ -57,9 +59,9 @@ module Bundler
       end
 
       def gem(*args)
-        options = args.last.is_a?(Hash) ? args.last : nil
-        group = current_group || (options && options.delete(:group))
-        group ||= :default
+        options = args.last.is_a?(Hash) ? args.last : {}
+        group = current_group || options.delete(:group) || DEFAULT_GROUP
+        group = wrap_in_array(group).sort
         groups[group] ||= []
         groups[group] << args
       end
@@ -69,6 +71,10 @@ module Bundler
         yield
       ensure
         current_group = nil
+      end
+
+      def wrap_in_array(object)
+        object.is_a?(Array) ? object : [object]
       end
 
       def parse(path)
