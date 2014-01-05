@@ -2,25 +2,25 @@ require 'thor'
 
 module Bundler
   module Reorganizer
-    class CLI < Thor
+    class CLI < Thor::Group
       DEFAULT_GROUP = [:default]
       attr_accessor :sources, :rubies, :groups, :current_group
 
-      desc "reorganize PATH_TO_GEMFILE [OPTIONS]", "reorganize Gemfile into groups of gems"
-      option :output, desc: 'path to write output of reorganized Gemfile', aliases: '-o'
-      def reorganize(gemfile_path)
+      desc "reorganize Gemfile into groups of gems"
+      argument :gemfile_path, :banner=>"path/to/Gemfile"
+      class_option :output, desc: 'path to write output of reorganized Gemfile', aliases: '-o'
+      def reorganize
         @sources = []
         @rubies = []
         @groups = {}
 
-        parse gemfile_path
-        output_gemfile gemfile_path
+        parse_gemfile
+        output_gemfile
       end
-      default_command :reorganize
 
       private
 
-      def output_gemfile(gemfile_path)
+      def output_gemfile
         output_path = options[:output] || gemfile_path
         output_buffer = File.open(output_path, 'w')
         say "Writing reorganized Gemfile to: #{output_path}"
@@ -77,9 +77,9 @@ module Bundler
         object.is_a?(Array) ? object : [object]
       end
 
-      def parse(path)
-        say "Parsing Gemfile: #{path}"
-        contents = File.read path
+      def parse_gemfile
+        say "Parsing Gemfile: #{gemfile_path}"
+        contents = File.read gemfile_path
         instance_eval contents
       end
     end
