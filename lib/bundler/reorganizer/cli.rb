@@ -70,7 +70,7 @@ module Bundler
         self.current_group = args
         yield
       ensure
-        current_group = nil
+        self.current_group = nil
       end
 
       def wrap_in_array(object)
